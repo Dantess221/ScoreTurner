@@ -1,4 +1,4 @@
-name: Android Signed Release
+name: Android Release
 on:
   push:
     branches: [ main, master ]
@@ -16,6 +16,7 @@ jobs:
           java-version: 17
 
       - name: Decode keystore from secrets
+        if: ${{ secrets.ANDROID_KEYSTORE_BASE64 != '' }}
         env:
           KEYSTORE_B64: ${{ secrets.ANDROID_KEYSTORE_BASE64 }}
         run: |
@@ -33,16 +34,15 @@ jobs:
             echo "Gradle wrapper found."
           fi
 
-      - name: Build signed release APK
+      - name: Build release APK
         env:
           ANDROID_SIGNING_STORE_FILE: ${{ github.workspace }}/keystore.jks
           ANDROID_SIGNING_STORE_PASSWORD: ${{ secrets.ANDROID_KEYSTORE_PASSWORD }}
           ANDROID_SIGNING_KEY_ALIAS: ${{ secrets.ANDROID_KEY_ALIAS }}
           ANDROID_SIGNING_KEY_PASSWORD: ${{ secrets.ANDROID_KEY_PASSWORD }}
         run: ./gradlew assembleRelease --stacktrace
-
-      - name: Upload signed APK
+      - name: Upload APK(s)
         uses: actions/upload-artifact@v4
         with:
           name: app-release
-          path: app/build/outputs/apk/release/app-release.apk
+          path: app/build/outputs/apk/release/*.apk
