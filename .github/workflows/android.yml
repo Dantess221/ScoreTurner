@@ -21,6 +21,18 @@ jobs:
         run: |
           echo "$KEYSTORE_B64" | base64 -d > keystore.jks
 
+      - name: Bootstrap Gradle wrapper if missing
+        run: |
+          if [ ! -f ./gradlew ]; then
+            echo "Gradle wrapper not found. Bootstrapping..."
+            curl -sLo $RUNNER_TEMP/gradle.zip https://services.gradle.org/distributions/gradle-8.7-bin.zip
+            unzip -q $RUNNER_TEMP/gradle.zip -d $RUNNER_TEMP/gradle
+            $RUNNER_TEMP/gradle/gradle-8.7/bin/gradle wrapper
+            chmod +x gradlew
+          else
+            echo "Gradle wrapper found."
+          fi
+
       - name: Build signed release APK
         env:
           ANDROID_SIGNING_STORE_FILE: ${{ github.workspace }}/keystore.jks
