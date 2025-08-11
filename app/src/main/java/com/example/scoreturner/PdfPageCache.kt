@@ -19,6 +19,14 @@ object PdfPageCache {
         return bmp
     }
 
+    fun getPageCount(ctx: Context, uri: Uri): Int? {
+        return try {
+            ctx.contentResolver.openFileDescriptor(uri, "r")?.use { pfd ->
+                PdfRenderer(pfd).use { it.pageCount }
+            }
+        } catch (_: Exception) { null }
+    }
+
     private fun render(ctx: Context, uri: Uri, pageIndex: Int, scale: Int): Bitmap? {
         return try {
             ctx.contentResolver.openFileDescriptor(uri, "r")?.use { pfd ->

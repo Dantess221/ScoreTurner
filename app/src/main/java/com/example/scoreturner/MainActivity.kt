@@ -27,39 +27,41 @@ private fun AppRoot() {
     val settingsRepo = remember { SettingsRepository(ctx.applicationContext) }
     val settings by settingsRepo.settingsFlow.collectAsState(initial = Settings())
 
-    var pendingImages by remember { mutableStateOf<List<Uri>>(emptyList()) }
+    ScoreTurnerTheme(darkTheme = settings.darkTheme) {
+        var pendingImages by remember { mutableStateOf<List<Uri>>(emptyList()) }
 
-    NavHost(navController = nav, startDestination = "home") {
-        composable("home") {
-            HomeScreen(
-                openSettings = { nav.navigate("settings") },
-                openReader = { id -> nav.navigate("reader/$id") },
-                openNewImagesFlow = { uris -> pendingImages = uris; nav.navigate("newImages") },
-                repo = repo
-            )
-        }
-        composable("newImages") {
-            NewImagesScreen(
-                initialUris = pendingImages,
-                repo = repo,
-                onCancel = { nav.popBackStack() },
-                onSavedOpenReader = { id -> nav.navigate("reader/$id") { popUpTo("home") } }
-            )
-        }
-        composable(
-            route = "reader/{workId}",
-            arguments = listOf(navArgument("workId") { type = NavType.LongType })
-        ) { backStackEntry ->
-            val workId = backStackEntry.arguments!!.getLong("workId")
-            ReaderScreen(
-                workId = workId,
-                settings = settings,
-                repo = repo,
-                openSettings = { nav.navigate("settings") }
-            )
-        }
-        composable("settings") {
-            SettingsScreen(settings = settings, repo = settingsRepo, onBack = { nav.popBackStack() })
+        NavHost(navController = nav, startDestination = "home") {
+            composable("home") {
+                HomeScreen(
+                    openSettings = { nav.navigate("settings") },
+                    openReader = { id -> nav.navigate("reader/$id") },
+                    openNewImagesFlow = { uris -> pendingImages = uris; nav.navigate("newImages") },
+                    repo = repo
+                )
+            }
+            composable("newImages") {
+                NewImagesScreen(
+                    initialUris = pendingImages,
+                    repo = repo,
+                    onCancel = { nav.popBackStack() },
+                    onSavedOpenReader = { id -> nav.navigate("reader/$id") { popUpTo("home") } }
+                )
+            }
+            composable(
+                route = "reader/{workId}",
+                arguments = listOf(navArgument("workId") { type = NavType.LongType })
+            ) { backStackEntry ->
+                val workId = backStackEntry.arguments!!.getLong("workId")
+                ReaderScreen(
+                    workId = workId,
+                    settings = settings,
+                    repo = repo,
+                    openSettings = { nav.navigate("settings") }
+                )
+            }
+            composable("settings") {
+                SettingsScreen(settings = settings, repo = settingsRepo, onBack = { nav.popBackStack() })
+            }
         }
     }
 }
