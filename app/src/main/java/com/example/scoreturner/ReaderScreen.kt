@@ -55,10 +55,10 @@ fun ReaderScreen(
             WorkType.IMAGE_SET -> workWithPages?.pages?.size ?: 1
         }
         if (w.type == WorkType.PDF) {
-            withContext(Dispatchers.IO) {
-                val bmp = PdfPageCache.getPage(ctx, Uri.parse(w.sourceUri), pagerState.currentPage, scale = 3)
-                currentBitmap = bmp
+            val bmp = withContext(Dispatchers.IO) {
+                PdfPageCache.getPage(ctx, Uri.parse(w.sourceUri), pagerState.currentPage, scale = 3)
             }
+            currentBitmap = bmp
         }
     }
 
