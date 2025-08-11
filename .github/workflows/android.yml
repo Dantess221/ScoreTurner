@@ -7,6 +7,9 @@ on:
 jobs:
   build:
     runs-on: ubuntu-latest
+    env:
+      # вынесли секрет на уровень job
+      KEYSTORE_B64: ${{ secrets.ANDROID_KEYSTORE_BASE64 || '' }}
     steps:
       - uses: actions/checkout@v4
 
@@ -16,11 +19,9 @@ jobs:
           java-version: 17
 
       - name: Decode keystore from secrets
-        if: ${{ secrets.ANDROID_KEYSTORE_BASE64 != '' }}
-        env:
-          KEYSTORE_B64: ${{ secrets.ANDROID_KEYSTORE_BASE64 }}
+        if: ${{ env.KEYSTORE_B64 != '' }}
         run: |
-          echo "$KEYSTORE_B64" | base64 -d > keystore.jks
+          printf '%s' "$KEYSTORE_B64" | base64 --decode > keystore.jks
 
       - name: Bootstrap Gradle wrapper if missing
         run: |
@@ -34,13 +35,21 @@ jobs:
             echo "Gradle wrapper found."
           fi
 
-      - name: Build release APK
+      # Сборка с подписью, если секрет есть
+      - name: Build release APK (signed)
+        if: ${{ env.KEYSTORE_B64 != '' }}
         env:
           ANDROID_SIGNING_STORE_FILE: ${{ github.workspace }}/keystore.jks
           ANDROID_SIGNING_STORE_PASSWORD: ${{ secrets.ANDROID_KEYSTORE_PASSWORD }}
           ANDROID_SIGNING_KEY_ALIAS: ${{ secrets.ANDROID_KEY_ALIAS }}
           ANDROID_SIGNING_KEY_PASSWORD: ${{ secrets.ANDROID_KEY_PASSWORD }}
         run: ./gradlew assembleRelease --stacktrace
+
+      # Сборка без подписи, если секрета нет
+      - name: Build release APK (unsigned)
+        if: ${{ env.KEYSTORE_B64 == '' }}
+        run: ./gradlew assembleRelease --stacktrace
+
       - name: Upload APK(s)
         uses: actions/upload-artifact@v4
         with:
