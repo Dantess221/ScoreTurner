@@ -5,9 +5,12 @@ import androidx.camera.core.CameraSelector
 import androidx.camera.mlkit.vision.MlKitAnalyzer
 import androidx.camera.view.LifecycleCameraController
 import androidx.camera.view.PreviewView
+import androidx.compose.foundation.layout.size
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.unit.dp
 import androidx.compose.ui.viewinterop.AndroidView
 import androidx.core.content.ContextCompat
 import com.google.mlkit.vision.face.*
@@ -26,8 +29,9 @@ data class GestureConfig(
 
 @Composable
 fun FaceGestureOverlay(
-    modifier: Modifier,
+    modifier: Modifier = Modifier,
     config: GestureConfig,
+    showPreview: Boolean = false,
     onWinkLeft: () -> Unit,
     onWinkRight: () -> Unit,
     onNod: () -> Unit
@@ -95,7 +99,8 @@ fun FaceGestureOverlay(
         }
     }
 
-    AndroidView(modifier = modifier, factory = { context ->
+    val viewModifier = if (showPreview) modifier else modifier.size(1.dp).alpha(0f)
+    AndroidView(modifier = viewModifier, factory = { context ->
         PreviewView(context).apply {
             controller.bindToLifecycle(context as ComponentActivity)
             this.controller = controller
