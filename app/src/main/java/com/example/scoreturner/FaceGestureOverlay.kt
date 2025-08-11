@@ -3,7 +3,6 @@ package com.example.scoreturner
 import androidx.activity.ComponentActivity
 import androidx.camera.core.CameraSelector
 import androidx.camera.mlkit.vision.MlKitAnalyzer
-import androidx.camera.mlkit.vision.MlKitAnalyzer.COORDINATE_SYSTEM_VIEW_REFERENCED
 import androidx.camera.view.LifecycleCameraController
 import androidx.camera.view.PreviewView
 import androidx.compose.runtime.*
@@ -12,6 +11,8 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.viewinterop.AndroidView
 import androidx.core.content.ContextCompat
 import com.google.mlkit.vision.face.*
+
+private const val COORDINATE_SYSTEM_VIEW_REFERENCED = 1
 
 data class GestureConfig(
     val winkEnabled: Boolean,

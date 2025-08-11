@@ -6,7 +6,9 @@ import androidx.compose.foundation.gestures.detectDragGestures
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.itemsIndexed
+import androidx.compose.material.icons.Icons
 import androidx.compose.material3.*
+import androidx.compose.material.icons.filled.Menu
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.Offset
@@ -76,7 +78,7 @@ fun NewImagesScreen(
                             AsyncImage(model = uri, contentDescription = null, modifier = Modifier.size(72.dp))
                             Spacer(Modifier.width(12.dp))
                             Text(uri.lastPathSegment ?: "Изображение", modifier = Modifier.weight(1f))
-                            Icon(Icons.Default.DragIndicator, contentDescription = null)
+                            Icon(Icons.Default.Menu, contentDescription = null)
                         }
                     }
                 }
