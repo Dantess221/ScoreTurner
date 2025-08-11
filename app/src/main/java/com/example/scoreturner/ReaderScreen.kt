@@ -100,7 +100,6 @@ fun ReaderScreen(
                 }
                 if (cameraGranted && settings.useFaceGestures) {
                     FaceGestureOverlay(
-                        modifier = Modifier.align(Alignment.TopEnd).padding(12.dp).size(160.dp),
                         config = GestureConfig(
                             winkEnabled = settings.winkEnabled,
                             nodEnabled = settings.nodEnabled,
