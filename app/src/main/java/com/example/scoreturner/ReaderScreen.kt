@@ -18,6 +18,8 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.asImageBitmap
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalClipboardManager
+import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.ui.unit.dp
 import androidx.core.net.toUri
 import coil.compose.AsyncImage
@@ -45,6 +47,7 @@ fun ReaderScreen(
     val pagerState = rememberPagerState(pageCount = { max(pageCount, 1) })
 
     var currentBitmap by remember { mutableStateOf<Bitmap?>(null) }
+    var errorMessage by remember { mutableStateOf<String?>(null) }
 
     LaunchedEffect(workId) { repo.touchWork(workId) }
 
@@ -55,9 +58,15 @@ fun ReaderScreen(
             WorkType.IMAGE_SET -> workWithPages?.pages?.size ?: 1
         }
         if (w.type == WorkType.PDF) {
-            withContext(Dispatchers.IO) {
-                val bmp = PdfPageCache.getPage(ctx, Uri.parse(w.sourceUri), pagerState.currentPage, scale = 3)
+            try {
+                val bmp = withContext(Dispatchers.IO) {
+                    PdfPageCache.getPage(ctx, Uri.parse(w.sourceUri), pagerState.currentPage, scale = 3)
+                }
                 currentBitmap = bmp
+                errorMessage = null
+            } catch (e: Exception) {
+                currentBitmap = null
+                errorMessage = e.stackTraceToString()
             }
         }
     }
@@ -112,6 +121,22 @@ fun ReaderScreen(
                         onWinkLeft = onPrev,
                         onWinkRight = onNext,
                         onNod = onNext
+                    )
+                }
+                if (errorMessage != null) {
+                    val clipboard = LocalClipboardManager.current
+                    AlertDialog(
+                        onDismissRequest = { errorMessage = null },
+                        title = { Text("Ошибка") },
+                        text = { Text(errorMessage!!) },
+                        confirmButton = {
+                            TextButton(onClick = { clipboard.setText(AnnotatedString(errorMessage!!)) }) {
+                                Text("Копировать")
+                            }
+                        },
+                        dismissButton = {
+                            TextButton(onClick = { errorMessage = null }) { Text("Закрыть") }
+                        }
                     )
                 }
             }
