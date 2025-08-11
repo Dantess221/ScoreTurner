@@ -50,12 +50,13 @@ android {
 }
 
 dependencies {
-    // CameraX
-    implementation(platform("androidx.camera:camera-bom:1.4.0"))
-    implementation("androidx.camera:camera-camera2")
-    implementation("androidx.camera:camera-lifecycle")
-    implementation("androidx.camera:camera-view")
-    implementation("androidx.camera:camera-mlkit-vision")
+    // --- CameraX (versions pinned; no BOM) ---
+    val cameraVersion = "1.3.4"
+    implementation("androidx.camera:camera-core:$cameraVersion")
+    implementation("androidx.camera:camera-camera2:$cameraVersion")
+    implementation("androidx.camera:camera-lifecycle:$cameraVersion")
+    implementation("androidx.camera:camera-view:$cameraVersion")
+    implementation("androidx.camera:camera-mlkit-vision:$cameraVersion")
 
     // ML Kit
     implementation("com.google.mlkit:face-detection:16.1.7")
