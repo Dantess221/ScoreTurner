@@ -7,6 +7,7 @@
         android:allowBackup="true"
         android:supportsRtl="true"
         android:label="Score Turner"
+        android:icon="@drawable/ic_launcher"
         android:theme="@style/Theme.ScoreTurner">
         <activity
             android:name=".MainActivity"

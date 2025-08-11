@@ -22,9 +22,17 @@ fun SettingsScreen(
     Scaffold(
         topBar = { TopAppBar(title = { Text("Настройки") }, navigationIcon = {
             IconButton(onClick = onBack) { Icon(Icons.Default.ArrowBack, contentDescription = null) }
-        })}
+        }) }
     ) { pad ->
-        Column(Modifier.padding(pad).padding(16.dp).fillMaxSize(), verticalArrangement = Arrangement.spacedBy(16.dp)) {
+        Column(
+            Modifier.padding(pad).padding(16.dp).fillMaxSize(),
+            verticalArrangement = Arrangement.spacedBy(16.dp)
+        ) {
+            Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.fillMaxWidth()) {
+                Text("Тёмная тема", modifier = Modifier.weight(1f))
+                Switch(checked = settings.darkTheme, onCheckedChange = { v -> scope.launch { repo.setDarkTheme(v) } })
+            }
+            Divider()
             Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.fillMaxWidth()) {
                 Text("Листать мимикой", modifier = Modifier.weight(1f))
                 Switch(checked = settings.useFaceGestures, onCheckedChange = { v -> scope.launch { repo.setUseFaceGestures(v) } })
@@ -34,17 +42,68 @@ fun SettingsScreen(
                 Text("Подмигивания", modifier = Modifier.weight(1f))
                 Switch(checked = settings.winkEnabled, enabled = settings.useFaceGestures, onCheckedChange = { v -> scope.launch { repo.setWinkEnabled(v) } })
             }
-            LabeledSlider("Порог закрытия глаза", "Считаем глаз «закрытым», если ниже порога", settings.winkClosedThreshold.toFloat(), 0.05f..0.5f, 0.01f, settings.useFaceGestures && settings.winkEnabled) { v -> scope.launch { repo.setWinkClosedThr(v.toDouble()) } }
-            LabeledSlider("Порог открытого глаза", "Второй глаз должен быть «открыт» выше порога", settings.winkOpenThreshold.toFloat(), 0.5f..0.95f, 0.01f, settings.useFaceGestures && settings.winkEnabled) { v -> scope.launch { repo.setWinkOpenThr(v.toDouble()) } }
+            Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.fillMaxWidth()) {
+                Text("Правый глаз → вперёд", modifier = Modifier.weight(1f))
+                Switch(checked = settings.winkRightEnabled, enabled = settings.useFaceGestures && settings.winkEnabled, onCheckedChange = { v -> scope.launch { repo.setWinkRightEnabled(v) } })
+            }
+            Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.fillMaxWidth()) {
+                Text("Левый глаз → назад", modifier = Modifier.weight(1f))
+                Switch(checked = settings.winkLeftEnabled, enabled = settings.useFaceGestures && settings.winkEnabled, onCheckedChange = { v -> scope.launch { repo.setWinkLeftEnabled(v) } })
+            }
+            LabeledSlider(
+                "Порог закрытия глаза",
+                "Считаем глаз «закрытым», если ниже порога",
+                settings.winkClosedThreshold.toFloat(),
+                0.05f..0.5f,
+                0.01f,
+                settings.useFaceGestures && settings.winkEnabled && (settings.winkLeftEnabled || settings.winkRightEnabled)
+            ) { v -> scope.launch { repo.setWinkClosedThr(v.toDouble()) } }
+            LabeledSlider(
+                "Порог открытого глаза",
+                "Второй глаз должен быть «открыт» выше порога",
+                settings.winkOpenThreshold.toFloat(),
+                0.5f..0.95f,
+                0.01f,
+                settings.useFaceGestures && settings.winkEnabled && (settings.winkLeftEnabled || settings.winkRightEnabled)
+            ) { v -> scope.launch { repo.setWinkOpenThr(v.toDouble()) } }
             Divider()
             Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.fillMaxWidth()) {
-                Text("Кивки (вперёд)", modifier = Modifier.weight(1f))
+                Text("Кивки", modifier = Modifier.weight(1f))
                 Switch(checked = settings.nodEnabled, enabled = settings.useFaceGestures, onCheckedChange = { v -> scope.launch { repo.setNodEnabled(v) } })
             }
-            LabeledSlider("Чувствительность кивка (Δвниз, °)", "Насколько сильно опустить голову", settings.nodDownDeltaDeg.toFloat(), 5f..30f, 1f, settings.useFaceGestures && settings.nodEnabled) { v -> scope.launch { repo.setNodDownDelta(v.roundToInt()) } }
-            LabeledSlider("Возврат к базе (°)", "Насколько вернуться к исходному углу", settings.nodReturnDeltaDeg.toFloat(), 3f..20f, 1f, settings.useFaceGestures && settings.nodEnabled) { v -> scope.launch { repo.setNodReturnDelta(v.roundToInt()) } }
+            Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.fillMaxWidth()) {
+                Text("Вниз → вперёд", modifier = Modifier.weight(1f))
+                Switch(checked = settings.nodDownEnabled, enabled = settings.useFaceGestures && settings.nodEnabled, onCheckedChange = { v -> scope.launch { repo.setNodDownEnabled(v) } })
+            }
+            Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.fillMaxWidth()) {
+                Text("Вверх → назад", modifier = Modifier.weight(1f))
+                Switch(checked = settings.nodUpEnabled, enabled = settings.useFaceGestures && settings.nodEnabled, onCheckedChange = { v -> scope.launch { repo.setNodUpEnabled(v) } })
+            }
+            LabeledSlider(
+                "Чувствительность кивка (Δ°,)",
+                "Насколько сильно отклонить голову",
+                settings.nodDownDeltaDeg.toFloat(),
+                5f..30f,
+                1f,
+                settings.useFaceGestures && settings.nodEnabled && (settings.nodDownEnabled || settings.nodUpEnabled)
+            ) { v -> scope.launch { repo.setNodDownDelta(v.roundToInt()) } }
+            LabeledSlider(
+                "Возврат к базе (°)",
+                "Насколько вернуться к исходному углу",
+                settings.nodReturnDeltaDeg.toFloat(),
+                3f..20f,
+                1f,
+                settings.useFaceGestures && settings.nodEnabled && (settings.nodDownEnabled || settings.nodUpEnabled)
+            ) { v -> scope.launch { repo.setNodReturnDelta(v.roundToInt()) } }
             Divider()
-            LabeledSlider("Антидребезг, мс", "Минимальная пауза между срабатываниями", settings.cooldownMs.toFloat(), 300f..2000f, 50f, settings.useFaceGestures) { v -> scope.launch { repo.setCooldownMs(v.roundToInt()) } }
+            LabeledSlider(
+                "Антидребезг, мс",
+                "Минимальная пауза между срабатываниями",
+                settings.cooldownMs.toFloat(),
+                300f..2000f,
+                50f,
+                settings.useFaceGestures
+            ) { v -> scope.launch { repo.setCooldownMs(v.roundToInt()) } }
         }
     }
 }
@@ -72,11 +131,14 @@ private fun LabeledSlider(
                 modifier = Modifier.weight(1f)
             )
             Spacer(Modifier.width(12.dp))
-            Text(text = when {
-                title.contains("мс") -> "${value.toInt()} ms"
-                title.contains("°") -> "${value.toInt()}°"
-                else -> String.format("%.2f", value)
-            }, style = MaterialTheme.typography.labelLarge)
+            Text(
+                text = when {
+                    title.contains("мс") -> "${value.toInt()} ms"
+                    title.contains("°") -> "${value.toInt()}°"
+                    else -> String.format("%.2f", value)
+                },
+                style = MaterialTheme.typography.labelLarge
+            )
         }
     }
 }

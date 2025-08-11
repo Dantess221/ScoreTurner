@@ -51,12 +51,19 @@ fun ReaderScreen(
 
     LaunchedEffect(workId) { repo.touchWork(workId) }
 
-    LaunchedEffect(workWithPages, pagerState.currentPage) {
+    LaunchedEffect(workWithPages) {
         val w = workWithPages?.work ?: return@LaunchedEffect
         pageCount = when (w.type) {
-            WorkType.PDF -> 9999 // unknown until open; we will render page on demand
+            WorkType.PDF -> {
+                val uri = Uri.parse(w.sourceUri)
+                PdfPageCache.getPageCount(ctx, uri) ?: 1
+            }
             WorkType.IMAGE_SET -> workWithPages?.pages?.size ?: 1
         }
+    }
+
+    LaunchedEffect(workWithPages, pagerState.currentPage) {
+        val w = workWithPages?.work ?: return@LaunchedEffect
         if (w.type == WorkType.PDF) {
             try {
                 val bmp = withContext(Dispatchers.IO) {
@@ -71,47 +78,81 @@ fun ReaderScreen(
         }
     }
 
-    val onNext: () -> Unit = { scope.launch { if (pagerState.currentPage < pagerState.pageCount - 1) pagerState.animateScrollToPage(pagerState.currentPage + 1) } }
-    val onPrev: () -> Unit = { scope.launch { if (pagerState.currentPage > 0) pagerState.animateScrollToPage(pagerState.currentPage - 1) } }
+    val onNext: () -> Unit = {
+        scope.launch {
+            if (pagerState.currentPage < pagerState.pageCount - 1) {
+                pagerState.animateScrollToPage(pagerState.currentPage + 1)
+            }
+        }
+    }
+    val onPrev: () -> Unit = {
+        scope.launch {
+            if (pagerState.currentPage > 0) {
+                pagerState.animateScrollToPage(pagerState.currentPage - 1)
+            }
+        }
+    }
 
     Scaffold(
         topBar = {
             TopAppBar(title = { Text(workWithPages?.work?.title ?: "Произведение") }, actions = {
-                IconButton(onClick = openSettings) { Icon(Icons.Default.Settings, contentDescription = null) }
+                IconButton(onClick = openSettings) {
+                    Icon(Icons.Default.Settings, contentDescription = null)
+                }
             })
         }
     ) { pad ->
         Box(Modifier.fillMaxSize().padding(pad)) {
             val w = workWithPages?.work
             if (w == null) {
-                Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) { CircularProgressIndicator() }
+                Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+                    CircularProgressIndicator()
+                }
             } else {
                 HorizontalPager(state = pagerState, modifier = Modifier.fillMaxSize()) { pageIndex ->
                     Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
                         when (w.type) {
                             WorkType.PDF -> {
-                                currentBitmap?.let { Image(bitmap = it.asImageBitmap(), contentDescription = null, modifier = Modifier.fillMaxSize()) }
+                                currentBitmap?.let {
+                                    Image(
+                                        bitmap = it.asImageBitmap(),
+                                        contentDescription = null,
+                                        modifier = Modifier.fillMaxSize()
+                                    )
+                                }
                             }
                             WorkType.IMAGE_SET -> {
                                 val pages = workWithPages!!.pages.sortedBy { it.sortOrder }
                                 val uri = pages.getOrNull(pageIndex)?.uri?.toUri()
-                                AsyncImage(model = uri, contentDescription = null, modifier = Modifier.fillMaxSize())
+                                AsyncImage(
+                                    model = uri,
+                                    contentDescription = null,
+                                    modifier = Modifier.fillMaxSize()
+                                )
                             }
                         }
                     }
                 }
-                Row(Modifier.align(Alignment.BottomCenter).padding(16.dp), horizontalArrangement = Arrangement.spacedBy(12.dp)) {
+                Row(
+                    Modifier.align(Alignment.BottomCenter).padding(16.dp),
+                    horizontalArrangement = Arrangement.spacedBy(12.dp)
+                ) {
                     FilledTonalButton(onClick = onPrev) { Text("Назад") }
                     FilledTonalButton(onClick = onNext) { Text("Вперёд") }
-                    FilledTonalButton(onClick = { if (!cameraGranted) askCamera.launch(Manifest.permission.CAMERA) }) {
+                    FilledTonalButton(onClick = {
+                        if (cameraGranted) cameraGranted = false
+                        else askCamera.launch(Manifest.permission.CAMERA)
+                    }) {
                         Text(if (cameraGranted) "Камера ✓" else "Камера")
                     }
                 }
                 if (cameraGranted && settings.useFaceGestures) {
                     FaceGestureOverlay(
                         config = GestureConfig(
-                            winkEnabled = settings.winkEnabled,
-                            nodEnabled = settings.nodEnabled,
+                            winkLeftEnabled = settings.winkEnabled && settings.winkLeftEnabled,
+                            winkRightEnabled = settings.winkEnabled && settings.winkRightEnabled,
+                            nodUpEnabled = settings.nodEnabled && settings.nodUpEnabled,
+                            nodDownEnabled = settings.nodEnabled && settings.nodDownEnabled,
                             cooldownMs = settings.cooldownMs.toLong(),
                             winkClosedThr = settings.winkClosedThreshold.toFloat(),
                             winkOpenThr = settings.winkOpenThreshold.toFloat(),
@@ -120,7 +161,8 @@ fun ReaderScreen(
                         ),
                         onWinkLeft = onPrev,
                         onWinkRight = onNext,
-                        onNod = onNext
+                        onNodUp = onPrev,
+                        onNodDown = onNext
                     )
                 }
                 if (errorMessage != null) {

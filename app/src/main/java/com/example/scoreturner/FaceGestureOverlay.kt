@@ -18,8 +18,10 @@ import com.google.mlkit.vision.face.*
 private const val COORDINATE_SYSTEM_VIEW_REFERENCED = 1
 
 data class GestureConfig(
-    val winkEnabled: Boolean,
-    val nodEnabled: Boolean,
+    val winkLeftEnabled: Boolean,
+    val winkRightEnabled: Boolean,
+    val nodUpEnabled: Boolean,
+    val nodDownEnabled: Boolean,
     val cooldownMs: Long,
     val winkClosedThr: Float,
     val winkOpenThr: Float,
@@ -34,7 +36,8 @@ fun FaceGestureOverlay(
     showPreview: Boolean = false,
     onWinkLeft: () -> Unit,
     onWinkRight: () -> Unit,
-    onNod: () -> Unit
+    onNodUp: () -> Unit,
+    onNodDown: () -> Unit
 ) {
     val ctx = LocalContext.current
     val controller = remember { LifecycleCameraController(ctx) }
@@ -54,8 +57,10 @@ fun FaceGestureOverlay(
 
     val engine = remember {
         BlinkNodEngine(
-            enableWink = config.winkEnabled,
-            enableNod = config.nodEnabled,
+            enableWinkLeft = config.winkLeftEnabled,
+            enableWinkRight = config.winkRightEnabled,
+            enableNodUp = config.nodUpEnabled,
+            enableNodDown = config.nodDownEnabled,
             cooldownMs = config.cooldownMs,
             winkClosedThr = config.winkClosedThr,
             winkOpenThr = config.winkOpenThr,
@@ -63,14 +68,17 @@ fun FaceGestureOverlay(
             nodReturnDelta = config.nodReturnDeltaDeg,
             onWinkLeft = onWinkLeft,
             onWinkRight = onWinkRight,
-            onNod = onNod
+            onNodUp = onNodUp,
+            onNodDown = onNodDown
         )
     }
 
     DisposableEffect(config) {
         engine.updateConfig(
-            enableWink = config.winkEnabled,
-            enableNod = config.nodEnabled,
+            enableWinkLeft = config.winkLeftEnabled,
+            enableWinkRight = config.winkRightEnabled,
+            enableNodUp = config.nodUpEnabled,
+            enableNodDown = config.nodDownEnabled,
             cooldownMs = config.cooldownMs,
             winkClosedThr = config.winkClosedThr,
             winkOpenThr = config.winkOpenThr,
@@ -110,8 +118,10 @@ fun FaceGestureOverlay(
 }
 
 private class BlinkNodEngine(
-    enableWink: Boolean,
-    enableNod: Boolean,
+    enableWinkLeft: Boolean,
+    enableWinkRight: Boolean,
+    enableNodUp: Boolean,
+    enableNodDown: Boolean,
     cooldownMs: Long,
     winkClosedThr: Float,
     winkOpenThr: Float,
@@ -119,12 +129,15 @@ private class BlinkNodEngine(
     nodReturnDelta: Float,
     private val onWinkLeft: () -> Unit,
     private val onWinkRight: () -> Unit,
-    private val onNod: () -> Unit
+    private val onNodUp: () -> Unit,
+    private val onNodDown: () -> Unit
 ) {
     private var lastTriggerMs = 0L
 
-    private var enableWink = enableWink
-    private var enableNod = enableNod
+    private var enableWinkLeft = enableWinkLeft
+    private var enableWinkRight = enableWinkRight
+    private var enableNodUp = enableNodUp
+    private var enableNodDown = enableNodDown
     private var cooldownMs = cooldownMs
     private var winkClosed = winkClosedThr
     private var winkOpen = winkOpenThr
@@ -133,18 +146,23 @@ private class BlinkNodEngine(
 
     private var baselinePitch: Float? = null
     private var nodDown = false
+    private var nodUp = false
 
     fun updateConfig(
-        enableWink: Boolean,
-        enableNod: Boolean,
+        enableWinkLeft: Boolean,
+        enableWinkRight: Boolean,
+        enableNodUp: Boolean,
+        enableNodDown: Boolean,
         cooldownMs: Long,
         winkClosedThr: Float,
         winkOpenThr: Float,
         nodDownDelta: Float,
         nodReturnDelta: Float
     ) {
-        this.enableWink = enableWink
-        this.enableNod = enableNod
+        this.enableWinkLeft = enableWinkLeft
+        this.enableWinkRight = enableWinkRight
+        this.enableNodUp = enableNodUp
+        this.enableNodDown = enableNodDown
         this.cooldownMs = cooldownMs
         this.winkClosed = winkClosedThr
         this.winkOpen = winkOpenThr
@@ -161,18 +179,23 @@ private class BlinkNodEngine(
         val l = face.leftEyeOpenProbability ?: 1f
         val r = face.rightEyeOpenProbability ?: 1f
 
-        if (enableWink) {
-            if (l < winkClosed && r > winkOpen) { fire(onWinkLeft); return }
-            if (r < winkClosed && l > winkOpen) { fire(onWinkRight); return }
-        }
+        if (enableWinkLeft && l < winkClosed && r > winkOpen) { fire(onWinkLeft); return }
+        if (enableWinkRight && r < winkClosed && l > winkOpen) { fire(onWinkRight); return }
 
-        if (enableNod) {
-            val pitch = face.headEulerAngleX
-            if (baselinePitch == null) baselinePitch = pitch
-            val base = baselinePitch!!
+        val pitch = face.headEulerAngleX
+        if (baselinePitch == null) baselinePitch = pitch
+        val base = baselinePitch!!
+
+        if (enableNodDown) {
             val down = base - pitch
             if (!nodDown && down > nodDownDelta) { nodDown = true }
-            if (nodDown && kotlin.math.abs(pitch - base) < nodReturnDelta) { nodDown = false; fire(onNod) }
+            if (nodDown && kotlin.math.abs(pitch - base) < nodReturnDelta) { nodDown = false; fire(onNodDown); return }
+        }
+
+        if (enableNodUp) {
+            val up = pitch - base
+            if (!nodUp && up > nodDownDelta) { nodUp = true }
+            if (nodUp && kotlin.math.abs(pitch - base) < nodReturnDelta) { nodUp = false; fire(onNodUp) }
         }
     }
 }
