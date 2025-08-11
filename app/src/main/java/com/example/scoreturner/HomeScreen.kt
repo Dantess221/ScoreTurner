@@ -14,7 +14,6 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.asImageBitmap
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.core.net.toUri
@@ -22,6 +21,8 @@ import coil.compose.AsyncImage
 import kotlinx.coroutines.launch
 import java.text.SimpleDateFormat
 import java.util.*
+import android.graphics.BitmapFactory
+import androidx.compose.ui.graphics.asImageBitmap
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -128,8 +129,8 @@ private fun RecentItem(
     ElevatedCard(onClick = onOpen, modifier = Modifier.fillMaxWidth()) {
         Row(Modifier.padding(12.dp), verticalAlignment = Alignment.CenterVertically) {
             if (thumbFile != null && thumbFile.exists()) {
-                val bmp = androidx.compose.ui.graphics.asImageBitmap(android.graphics.BitmapFactory.decodeFile(thumbFile.absolutePath))
-                Image(bmp, contentDescription = null, modifier = Modifier.size(56.dp))
+                val bmp = BitmapFactory.decodeFile(thumbFile.absolutePath).asImageBitmap()
+                Image(bitmap = bmp, contentDescription = null, modifier = Modifier.size(56.dp))
             } else {
                 Icon(if (item.work.type == WorkType.PDF) Icons.Default.PictureAsPdf else Icons.Default.Image, contentDescription = null)
             }
