@@ -68,7 +68,6 @@ fun ReaderScreen(
                 currentBitmap = null
                 errorMessage = e.stackTraceToString()
             }
-            currentBitmap = bmp
         }
     }
 
