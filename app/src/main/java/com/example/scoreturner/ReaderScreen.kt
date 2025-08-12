@@ -6,6 +6,8 @@ import android.net.Uri
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.Image
+import androidx.compose.foundation.clickable
+import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.pager.HorizontalPager
@@ -24,6 +26,7 @@ import androidx.compose.ui.unit.dp
 import androidx.core.net.toUri
 import coil.compose.AsyncImage
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import kotlin.math.max
@@ -48,6 +51,15 @@ fun ReaderScreen(
 
     var currentBitmap by remember { mutableStateOf<Bitmap?>(null) }
     var errorMessage by remember { mutableStateOf<String?>(null) }
+    var fullScreen by remember { mutableStateOf(false) }
+    var controlsVisible by remember { mutableStateOf(false) }
+
+    LaunchedEffect(fullScreen, controlsVisible) {
+        if (fullScreen && controlsVisible) {
+            delay(3000)
+            controlsVisible = false
+        }
+    }
 
     LaunchedEffect(workId) { repo.touchWork(workId) }
 
@@ -95,14 +107,25 @@ fun ReaderScreen(
 
     Scaffold(
         topBar = {
-            TopAppBar(title = { Text(workWithPages?.work?.title ?: "Произведение") }, actions = {
-                IconButton(onClick = openSettings) {
-                    Icon(Icons.Default.Settings, contentDescription = null)
-                }
-            })
+            if (!fullScreen) {
+                TopAppBar(title = { Text(workWithPages?.work?.title ?: "Произведение") }, actions = {
+                    IconButton(onClick = openSettings) {
+                        Icon(Icons.Default.Settings, contentDescription = null)
+                    }
+                })
+            }
         }
     ) { pad ->
-        Box(Modifier.fillMaxSize().padding(pad)) {
+        Box(
+            Modifier
+                .fillMaxSize()
+                .padding(pad)
+                .clickable(
+                    enabled = fullScreen,
+                    indication = null,
+                    interactionSource = remember { MutableInteractionSource() }
+                ) { controlsVisible = true }
+        ) {
             val w = workWithPages?.work
             if (w == null) {
                 Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
@@ -133,17 +156,40 @@ fun ReaderScreen(
                         }
                     }
                 }
-                Row(
-                    Modifier.align(Alignment.BottomCenter).padding(16.dp),
-                    horizontalArrangement = Arrangement.spacedBy(12.dp)
-                ) {
-                    FilledTonalButton(onClick = onPrev) { Text("Назад") }
-                    FilledTonalButton(onClick = onNext) { Text("Вперёд") }
-                    FilledTonalButton(onClick = {
-                        if (cameraGranted) cameraGranted = false
-                        else askCamera.launch(Manifest.permission.CAMERA)
-                    }) {
-                        Text(if (cameraGranted) "Камера ✓" else "Камера")
+                if (!fullScreen) {
+                    Row(
+                        Modifier.align(Alignment.BottomCenter).padding(16.dp),
+                        horizontalArrangement = Arrangement.spacedBy(12.dp)
+                    ) {
+                        FilledTonalButton(onClick = onPrev) { Text("Назад") }
+                        FilledTonalButton(onClick = onNext) { Text("Вперёд") }
+                        FilledTonalButton(onClick = {
+                            if (cameraGranted) cameraGranted = false
+                            else askCamera.launch(Manifest.permission.CAMERA)
+                        }) {
+                            Text(if (cameraGranted) "Камера ✓" else "Камера")
+                        }
+                        FilledTonalButton(onClick = { fullScreen = true; controlsVisible = false }) {
+                            Text("На весь экран")
+                        }
+                    }
+                } else if (controlsVisible) {
+                    Row(
+                        Modifier.align(Alignment.BottomCenter).padding(16.dp),
+                        horizontalArrangement = Arrangement.spacedBy(12.dp)
+                    ) {
+                        FilledTonalButton(onClick = { onPrev(); controlsVisible = true }) { Text("Назад") }
+                        FilledTonalButton(onClick = { onNext(); controlsVisible = true }) { Text("Вперёд") }
+                        FilledTonalButton(onClick = {
+                            controlsVisible = true
+                            if (cameraGranted) cameraGranted = false
+                            else askCamera.launch(Manifest.permission.CAMERA)
+                        }) {
+                            Text(if (cameraGranted) "Камера ✓" else "Камера")
+                        }
+                        FilledTonalButton(onClick = { fullScreen = false; controlsVisible = false }) {
+                            Text("Выход")
+                        }
                     }
                 }
                 if (cameraGranted && settings.useFaceGestures) {
