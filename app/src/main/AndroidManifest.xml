@@ -4,6 +4,7 @@
     <uses-feature android:name="android.hardware.camera.front" android:required="false" />
 
     <application
+        android:name=".ScoreTurnerApp"
         android:allowBackup="true"
         android:supportsRtl="true"
         android:label="Score Turner"
