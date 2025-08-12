@@ -23,6 +23,8 @@ import java.text.SimpleDateFormat
 import java.util.*
 import android.graphics.BitmapFactory
 import androidx.compose.ui.graphics.asImageBitmap
+import androidx.compose.ui.platform.LocalClipboardManager
+import androidx.compose.ui.text.AnnotatedString
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -39,6 +41,7 @@ fun HomeScreen(
     var pendingPdf by remember { mutableStateOf<Uri?>(null) }
     var titleDialogForPdf by remember { mutableStateOf(false) }
     var titleText by remember { mutableStateOf("") }
+    var pdfError by remember { mutableStateOf<String?>(null) }
 
     val openPdf = rememberLauncherForActivityResult(ActivityResultContracts.OpenDocument()) { uri ->
         if (uri != null) { pendingPdf = uri; titleText = ""; titleDialogForPdf = true }
@@ -101,14 +104,34 @@ fun HomeScreen(
                 TextButton(onClick = {
                     val t = titleText.ifBlank { defaultTitle("PDF") }
                     scope.launch {
-                        val id = repo.createPdfWork(pendingPdf!!, t); openReader(id)
+                        try {
+                            val id = repo.createPdfWork(pendingPdf!!, t)
+                            openReader(id)
+                        } catch (e: Exception) {
+                            pdfError = e.stackTraceToString()
+                        } finally {
+                            titleDialogForPdf = false
+                            pendingPdf = null
+                        }
                     }
-                    titleDialogForPdf = false; pendingPdf = null
                 }) { Text("Сохранить") }
             },
             dismissButton = { TextButton(onClick = { titleDialogForPdf = false; pendingPdf = null }) { Text("Отмена") } },
             title = { Text("Название произведения") },
             text = { OutlinedTextField(value = titleText, onValueChange = { titleText = it }, placeholder = { Text("Например: Шопен — Ноктюрн (PDF)") }, singleLine = true) }
+        )
+    }
+
+    if (pdfError != null) {
+        val clipboard = LocalClipboardManager.current
+        AlertDialog(
+            onDismissRequest = { pdfError = null },
+            title = { Text("Ошибка импорта PDF") },
+            text = { Text(pdfError!!) },
+            confirmButton = {
+                TextButton(onClick = { clipboard.setText(AnnotatedString(pdfError!!)) }) { Text("Копировать") }
+            },
+            dismissButton = { TextButton(onClick = { pdfError = null }) { Text("Закрыть") } }
         )
     }
 }
