@@ -60,6 +60,8 @@ dependencies {
 
     // ML Kit
     implementation("com.google.mlkit:face-detection:16.1.7")
+    implementation("com.google.mlkit:translate:17.0.1")
+    implementation("org.jetbrains.kotlinx:kotlinx-coroutines-play-services:1.7.3")
 
     // Compose
     implementation("androidx.activity:activity-compose:1.9.2")

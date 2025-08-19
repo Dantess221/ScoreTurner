@@ -110,7 +110,7 @@ fun ReaderScreen(
     Scaffold(
         topBar = {
             if (!fullScreen) {
-                TopAppBar(title = { Text(workWithPages?.work?.title ?: "Произведение") }, actions = {
+                TopAppBar(title = { Text(workWithPages?.work?.title ?: t("Произведение")) }, actions = {
                     IconButton(onClick = openSettings) {
                         Icon(Icons.Default.Settings, contentDescription = null)
                     }
@@ -163,18 +163,18 @@ fun ReaderScreen(
                         Modifier.align(Alignment.BottomCenter).padding(16.dp),
                         horizontalArrangement = Arrangement.spacedBy(12.dp)
                     ) {
-                        FilledTonalButton(onClick = onPrev) { Text("Назад") }
-                        FilledTonalButton(onClick = onNext) { Text("Вперёд") }
+                        FilledTonalButton(onClick = onPrev) { Text(t("Назад")) }
+                        FilledTonalButton(onClick = onNext) { Text(t("Вперёд")) }
                         FilledTonalButton(onClick = {
                             if (cameraGranted) cameraGranted = false
                             else askCamera.launch(Manifest.permission.CAMERA)
                         }) {
-                            Text(if (cameraGranted) "Камера ✓" else "Камера")
+                            Text(t(if (cameraGranted) "Камера ✓" else "Камера"))
                         }
                         FilledTonalButton(onClick = { fullScreen = true; controlsVisible = false }) {
                             Icon(
                                 Icons.Default.Fullscreen,
-                                contentDescription = "На весь экран"
+                                contentDescription = t("На весь экран")
                             )
                         }
                     }
@@ -183,19 +183,19 @@ fun ReaderScreen(
                         Modifier.align(Alignment.BottomCenter).padding(16.dp),
                         horizontalArrangement = Arrangement.spacedBy(12.dp)
                     ) {
-                        FilledTonalButton(onClick = { onPrev(); controlsVisible = true }) { Text("Назад") }
-                        FilledTonalButton(onClick = { onNext(); controlsVisible = true }) { Text("Вперёд") }
+                        FilledTonalButton(onClick = { onPrev(); controlsVisible = true }) { Text(t("Назад")) }
+                        FilledTonalButton(onClick = { onNext(); controlsVisible = true }) { Text(t("Вперёд")) }
                         FilledTonalButton(onClick = {
                             controlsVisible = true
                             if (cameraGranted) cameraGranted = false
                             else askCamera.launch(Manifest.permission.CAMERA)
                         }) {
-                            Text(if (cameraGranted) "Камера ✓" else "Камера")
+                            Text(t(if (cameraGranted) "Камера ✓" else "Камера"))
                         }
                         FilledTonalButton(onClick = { fullScreen = false; controlsVisible = false }) {
                             Icon(
                                 Icons.Default.FullscreenExit,
-                                contentDescription = "Выйти из полноэкранного режима"
+                                contentDescription = t("Выйти из полноэкранного режима")
                             )
                         }
                     }
@@ -223,15 +223,15 @@ fun ReaderScreen(
                     val clipboard = LocalClipboardManager.current
                     AlertDialog(
                         onDismissRequest = { errorMessage = null },
-                        title = { Text("Ошибка") },
+                        title = { Text(t("Ошибка")) },
                         text = { Text(errorMessage!!) },
                         confirmButton = {
                             TextButton(onClick = { clipboard.setText(AnnotatedString(errorMessage!!)) }) {
-                                Text("Копировать")
+                                Text(t("Копировать"))
                             }
                         },
                         dismissButton = {
-                            TextButton(onClick = { errorMessage = null }) { Text("Закрыть") }
+                            TextButton(onClick = { errorMessage = null }) { Text(t("Закрыть")) }
                         }
                     )
                 }

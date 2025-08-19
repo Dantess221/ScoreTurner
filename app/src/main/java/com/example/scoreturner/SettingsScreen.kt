@@ -27,7 +27,7 @@ fun SettingsScreen(
     val categoryIndices = mapOf(0 to 0, 1 to 3, 2 to 9, 3 to 15)
 
     Scaffold(
-        topBar = { TopAppBar(title = { Text("Настройки") }, navigationIcon = {
+        topBar = { TopAppBar(title = { Text(t("Настройки")) }, navigationIcon = {
             IconButton(onClick = onBack) { Icon(Icons.Default.ArrowBack, contentDescription = null) }
         }) }
     ) { pad ->
@@ -40,7 +40,7 @@ fun SettingsScreen(
                             selectedTab = idx
                             scope.launch { listState.animateScrollToItem(categoryIndices[idx]!!) }
                         },
-                        text = { Text(title) }
+                        text = { Text(t(title)) }
                     )
                 }
             }
@@ -50,36 +50,36 @@ fun SettingsScreen(
                 contentPadding = PaddingValues(16.dp),
                 verticalArrangement = Arrangement.spacedBy(16.dp)
             ) {
-                item { Text("Общие", style = MaterialTheme.typography.titleLarge) }
+                item { Text(t("Общие"), style = MaterialTheme.typography.titleLarge) }
                 item {
                     Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.fillMaxWidth()) {
-                        Text("Тёмная тема", modifier = Modifier.weight(1f))
+                        Text(t("Тёмная тема"), modifier = Modifier.weight(1f))
                         Switch(checked = settings.darkTheme, onCheckedChange = { v -> scope.launch { repo.setDarkTheme(v) } })
                     }
                 }
                 item {
                     Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.fillMaxWidth()) {
-                        Text("Листать мимикой", modifier = Modifier.weight(1f))
+                        Text(t("Листать мимикой"), modifier = Modifier.weight(1f))
                         Switch(checked = settings.useFaceGestures, onCheckedChange = { v -> scope.launch { repo.setUseFaceGestures(v) } })
                     }
                 }
 
-                item { Text("Подмигивания", style = MaterialTheme.typography.titleLarge) }
+                item { Text(t("Подмигивания"), style = MaterialTheme.typography.titleLarge) }
                 item {
                     Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.fillMaxWidth()) {
-                        Text("Подмигивания", modifier = Modifier.weight(1f))
+                        Text(t("Подмигивания"), modifier = Modifier.weight(1f))
                         Switch(checked = settings.winkEnabled, enabled = settings.useFaceGestures, onCheckedChange = { v -> scope.launch { repo.setWinkEnabled(v) } })
                     }
                 }
                 item {
                     Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.fillMaxWidth()) {
-                        Text("Правый глаз → вперёд", modifier = Modifier.weight(1f))
+                        Text(t("Правый глаз → вперёд"), modifier = Modifier.weight(1f))
                         Switch(checked = settings.winkRightEnabled, enabled = settings.useFaceGestures && settings.winkEnabled, onCheckedChange = { v -> scope.launch { repo.setWinkRightEnabled(v) } })
                     }
                 }
                 item {
                     Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.fillMaxWidth()) {
-                        Text("Левый глаз → назад", modifier = Modifier.weight(1f))
+                        Text(t("Левый глаз → назад"), modifier = Modifier.weight(1f))
                         Switch(checked = settings.winkLeftEnabled, enabled = settings.useFaceGestures && settings.winkEnabled, onCheckedChange = { v -> scope.launch { repo.setWinkLeftEnabled(v) } })
                     }
                 }
@@ -104,22 +104,22 @@ fun SettingsScreen(
                     ) { v -> scope.launch { repo.setWinkOpenThr(v.toDouble()) } }
                 }
 
-                item { Text("Кивки", style = MaterialTheme.typography.titleLarge) }
+                item { Text(t("Кивки"), style = MaterialTheme.typography.titleLarge) }
                 item {
                     Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.fillMaxWidth()) {
-                        Text("Кивки", modifier = Modifier.weight(1f))
+                        Text(t("Кивки"), modifier = Modifier.weight(1f))
                         Switch(checked = settings.nodEnabled, enabled = settings.useFaceGestures, onCheckedChange = { v -> scope.launch { repo.setNodEnabled(v) } })
                     }
                 }
                 item {
                     Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.fillMaxWidth()) {
-                        Text("Вниз → вперёд", modifier = Modifier.weight(1f))
+                        Text(t("Вниз → вперёд"), modifier = Modifier.weight(1f))
                         Switch(checked = settings.nodDownEnabled, enabled = settings.useFaceGestures && settings.nodEnabled, onCheckedChange = { v -> scope.launch { repo.setNodDownEnabled(v) } })
                     }
                 }
                 item {
                     Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.fillMaxWidth()) {
-                        Text("Вверх → назад", modifier = Modifier.weight(1f))
+                        Text(t("Вверх → назад"), modifier = Modifier.weight(1f))
                         Switch(checked = settings.nodUpEnabled, enabled = settings.useFaceGestures && settings.nodEnabled, onCheckedChange = { v -> scope.launch { repo.setNodUpEnabled(v) } })
                     }
                 }
@@ -144,7 +144,7 @@ fun SettingsScreen(
                     ) { v -> scope.launch { repo.setNodReturnDelta(v.roundToInt()) } }
                 }
 
-                item { Text("Прочее", style = MaterialTheme.typography.titleLarge) }
+                item { Text(t("Прочее"), style = MaterialTheme.typography.titleLarge) }
                 item {
                     LabeledSlider(
                         "Антидребезг, мс",
@@ -171,8 +171,8 @@ private fun LabeledSlider(
     onChange: (Float) -> Unit
 ) {
     Column(Modifier.fillMaxWidth()) {
-        Text(title, style = MaterialTheme.typography.titleMedium)
-        Text(subtitle, style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
+        Text(t(title), style = MaterialTheme.typography.titleMedium)
+        Text(t(subtitle), style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
         Row(verticalAlignment = Alignment.CenterVertically) {
             Slider(
                 value = value,
