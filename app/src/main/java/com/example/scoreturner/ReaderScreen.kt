@@ -13,6 +13,8 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.pager.HorizontalPager
 import androidx.compose.foundation.pager.rememberPagerState
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Fullscreen
+import androidx.compose.material.icons.filled.FullscreenExit
 import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
@@ -170,7 +172,10 @@ fun ReaderScreen(
                             Text(if (cameraGranted) "Камера ✓" else "Камера")
                         }
                         FilledTonalButton(onClick = { fullScreen = true; controlsVisible = false }) {
-                            Text("На весь экран")
+                            Icon(
+                                Icons.Default.Fullscreen,
+                                contentDescription = "На весь экран"
+                            )
                         }
                     }
                 } else if (controlsVisible) {
@@ -188,7 +193,10 @@ fun ReaderScreen(
                             Text(if (cameraGranted) "Камера ✓" else "Камера")
                         }
                         FilledTonalButton(onClick = { fullScreen = false; controlsVisible = false }) {
-                            Text("Выход")
+                            Icon(
+                                Icons.Default.FullscreenExit,
+                                contentDescription = "Выйти из полноэкранного режима"
+                            )
                         }
                     }
                 }
