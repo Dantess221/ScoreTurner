@@ -13,16 +13,16 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.pager.HorizontalPager
 import androidx.compose.foundation.pager.rememberPagerState
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Fullscreen
-import androidx.compose.material.icons.filled.FullscreenExit
 import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.asImageBitmap
-import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalClipboardManager
+import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.ui.unit.dp
 import androidx.core.net.toUri
@@ -32,6 +32,7 @@ import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import kotlin.math.max
+import com.example.scoreturner.R
 
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalFoundationApi::class)
 @Composable
@@ -163,17 +164,31 @@ fun ReaderScreen(
                         Modifier.align(Alignment.BottomCenter).padding(16.dp),
                         horizontalArrangement = Arrangement.spacedBy(12.dp)
                     ) {
-                        FilledTonalButton(onClick = onPrev) { Text(t("Назад")) }
-                        FilledTonalButton(onClick = onNext) { Text(t("Вперёд")) }
+                        FilledTonalButton(onClick = onPrev) {
+                            Icon(
+                                painterResource(R.drawable.ic_arrow_back),
+                                contentDescription = t("Назад")
+                            )
+                        }
+                        FilledTonalButton(onClick = onNext) {
+                            Icon(
+                                painterResource(R.drawable.ic_arrow_forward),
+                                contentDescription = t("Вперёд")
+                            )
+                        }
                         FilledTonalButton(onClick = {
                             if (cameraGranted) cameraGranted = false
                             else askCamera.launch(Manifest.permission.CAMERA)
                         }) {
-                            Text(t(if (cameraGranted) "Камера ✓" else "Камера"))
+                            Icon(
+                                painterResource(R.drawable.ic_camera),
+                                contentDescription = t(if (cameraGranted) "Камера ✓" else "Камера"),
+                                tint = if (cameraGranted) Color(0xFF4CAF50) else LocalContentColor.current
+                            )
                         }
                         FilledTonalButton(onClick = { fullScreen = true; controlsVisible = false }) {
                             Icon(
-                                Icons.Default.Fullscreen,
+                                painterResource(R.drawable.ic_fullscreen),
                                 contentDescription = t("На весь экран")
                             )
                         }
@@ -183,18 +198,32 @@ fun ReaderScreen(
                         Modifier.align(Alignment.BottomCenter).padding(16.dp),
                         horizontalArrangement = Arrangement.spacedBy(12.dp)
                     ) {
-                        FilledTonalButton(onClick = { onPrev(); controlsVisible = true }) { Text(t("Назад")) }
-                        FilledTonalButton(onClick = { onNext(); controlsVisible = true }) { Text(t("Вперёд")) }
+                        FilledTonalButton(onClick = { onPrev(); controlsVisible = true }) {
+                            Icon(
+                                painterResource(R.drawable.ic_arrow_back),
+                                contentDescription = t("Назад")
+                            )
+                        }
+                        FilledTonalButton(onClick = { onNext(); controlsVisible = true }) {
+                            Icon(
+                                painterResource(R.drawable.ic_arrow_forward),
+                                contentDescription = t("Вперёд")
+                            )
+                        }
                         FilledTonalButton(onClick = {
                             controlsVisible = true
                             if (cameraGranted) cameraGranted = false
                             else askCamera.launch(Manifest.permission.CAMERA)
                         }) {
-                            Text(t(if (cameraGranted) "Камера ✓" else "Камера"))
+                            Icon(
+                                painterResource(R.drawable.ic_camera),
+                                contentDescription = t(if (cameraGranted) "Камера ✓" else "Камера"),
+                                tint = if (cameraGranted) Color(0xFF4CAF50) else LocalContentColor.current
+                            )
                         }
                         FilledTonalButton(onClick = { fullScreen = false; controlsVisible = false }) {
                             Icon(
-                                Icons.Default.FullscreenExit,
+                                painterResource(R.drawable.ic_fullscreen_exit),
                                 contentDescription = t("Выйти из полноэкранного режима")
                             )
                         }
