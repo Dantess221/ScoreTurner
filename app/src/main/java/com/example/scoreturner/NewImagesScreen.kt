@@ -41,11 +41,11 @@ fun NewImagesScreen(
     var dragIndex by remember { mutableStateOf<Int?>(null) }
     var dragOffset by remember { mutableStateOf(0f) }
 
-    Scaffold(topBar = { TopAppBar(title = { Text("Новое произведение из картинок") }) }) { pad ->
+    Scaffold(topBar = { TopAppBar(title = { Text(t("Новое произведение из картинок")) }) }) { pad ->
         Column(Modifier.padding(pad).padding(16.dp).fillMaxSize(), verticalArrangement = Arrangement.spacedBy(16.dp)) {
-            OutlinedTextField(value = title, onValueChange = { title = it }, label = { Text("Название") }, singleLine = true, modifier = Modifier.fillMaxWidth())
+            OutlinedTextField(value = title, onValueChange = { title = it }, label = { Text(t("Название")) }, singleLine = true, modifier = Modifier.fillMaxWidth())
 
-            Text("Перетащите, чтобы поменять порядок:", style = MaterialTheme.typography.titleSmall)
+            Text(t("Перетащите, чтобы поменять порядок:"), style = MaterialTheme.typography.titleSmall)
 
             LazyColumn(modifier = Modifier.weight(1f)) {
                 itemsIndexed(items, key = { _, u -> u.toString() }) { index, uri ->
@@ -77,7 +77,7 @@ fun NewImagesScreen(
                         Row(Modifier.fillMaxSize().padding(8.dp)) {
                             AsyncImage(model = uri, contentDescription = null, modifier = Modifier.size(72.dp))
                             Spacer(Modifier.width(12.dp))
-                            Text(uri.lastPathSegment ?: "Изображение", modifier = Modifier.weight(1f))
+                            Text(uri.lastPathSegment ?: t("Изображение"), modifier = Modifier.weight(1f))
                             Icon(Icons.Default.Menu, contentDescription = null)
                         }
                     }
@@ -85,7 +85,7 @@ fun NewImagesScreen(
             }
 
             Row(horizontalArrangement = Arrangement.spacedBy(12.dp)) {
-                OutlinedButton(onClick = onCancel, enabled = !saving, modifier = Modifier.weight(1f)) { Text("Отмена") }
+                OutlinedButton(onClick = onCancel, enabled = !saving, modifier = Modifier.weight(1f)) { Text(t("Отмена")) }
                 Button(
                     onClick = {
                         if (items.isNotEmpty()) {
@@ -98,7 +98,7 @@ fun NewImagesScreen(
                     },
                     enabled = items.isNotEmpty() && !saving,
                     modifier = Modifier.weight(1f)
-                ) { Text(if (saving) "Сохранение..." else "Сохранить и открыть") }
+                ) { Text(t(if (saving) "Сохранение..." else "Сохранить и открыть")) }
             }
         }
     }

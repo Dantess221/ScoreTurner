@@ -69,20 +69,20 @@ fun HomeScreen(
         Column(Modifier.fillMaxSize().padding(pad).padding(16.dp), verticalArrangement = Arrangement.spacedBy(16.dp)) {
             Row(horizontalArrangement = Arrangement.spacedBy(12.dp)) {
                 FilledTonalButton(onClick = { openPdf.launch(arrayOf("application/pdf")) }, modifier = Modifier.weight(1f)) {
-                    Icon(Icons.Default.PictureAsPdf, contentDescription = null); Spacer(Modifier.width(8.dp)); Text("Открыть PDF")
+                    Icon(Icons.Default.PictureAsPdf, contentDescription = null); Spacer(Modifier.width(8.dp)); Text(t("Открыть PDF"))
                 }
                 FilledTonalButton(onClick = { openImages.launch(arrayOf("image/*")) }, modifier = Modifier.weight(1f)) {
-                    Icon(Icons.Default.AddPhotoAlternate, contentDescription = null); Spacer(Modifier.width(8.dp)); Text("Из изображений")
+                    Icon(Icons.Default.AddPhotoAlternate, contentDescription = null); Spacer(Modifier.width(8.dp)); Text(t("Из изображений"))
                 }
             }
             FilledTonalButton(onClick = { openFolder.launch(null) }, modifier = Modifier.fillMaxWidth()) {
-                Icon(Icons.Default.Folder, contentDescription = null); Spacer(Modifier.width(8.dp)); Text("Импорт папки (SAF)")
+                Icon(Icons.Default.Folder, contentDescription = null); Spacer(Modifier.width(8.dp)); Text(t("Импорт папки (SAF)"))
             }
 
-            Text("Недавние", style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.SemiBold)
+            Text(t("Недавние"), style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.SemiBold)
 
             if (recents.isEmpty()) {
-                Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) { Text("Пока пусто. Импортируйте произведения.") }
+                Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) { Text(t("Пока пусто. Импортируйте произведения.")) }
             } else {
                 LazyColumn(verticalArrangement = Arrangement.spacedBy(8.dp)) {
                     items(recents, key = { it.work.id }) { item ->
@@ -114,11 +114,11 @@ fun HomeScreen(
                             pendingPdf = null
                         }
                     }
-                }) { Text("Сохранить") }
+                }) { Text(t("Сохранить")) }
             },
-            dismissButton = { TextButton(onClick = { titleDialogForPdf = false; pendingPdf = null }) { Text("Отмена") } },
-            title = { Text("Название произведения") },
-            text = { OutlinedTextField(value = titleText, onValueChange = { titleText = it }, placeholder = { Text("Например: Шопен — Ноктюрн (PDF)") }, singleLine = true) }
+            dismissButton = { TextButton(onClick = { titleDialogForPdf = false; pendingPdf = null }) { Text(t("Отмена")) } },
+            title = { Text(t("Название произведения")) },
+            text = { OutlinedTextField(value = titleText, onValueChange = { titleText = it }, placeholder = { Text(t("Например: Шопен — Ноктюрн (PDF)")) }, singleLine = true) }
         )
     }
 
@@ -126,12 +126,12 @@ fun HomeScreen(
         val clipboard = LocalClipboardManager.current
         AlertDialog(
             onDismissRequest = { pdfError = null },
-            title = { Text("Ошибка импорта PDF") },
+            title = { Text(t("Ошибка импорта PDF")) },
             text = { Text(pdfError!!) },
             confirmButton = {
-                TextButton(onClick = { clipboard.setText(AnnotatedString(pdfError!!)) }) { Text("Копировать") }
+                TextButton(onClick = { clipboard.setText(AnnotatedString(pdfError!!)) }) { Text(t("Копировать")) }
             },
-            dismissButton = { TextButton(onClick = { pdfError = null }) { Text("Закрыть") } }
+            dismissButton = { TextButton(onClick = { pdfError = null }) { Text(t("Закрыть")) } }
         )
     }
 }
@@ -166,8 +166,8 @@ private fun RecentItem(
             Box {
                 IconButton(onClick = { menu = true }) { Icon(Icons.Default.MoreVert, contentDescription = null) }
                 DropdownMenu(expanded = menu, onDismissRequest = { menu = false }) {
-                    DropdownMenuItem(text = { Text("Переименовать") }, onClick = { menu = false; renameOpen = true })
-                    DropdownMenuItem(text = { Text("Удалить") }, onClick = { menu = false; onDelete() })
+                    DropdownMenuItem(text = { Text(t("Переименовать")) }, onClick = { menu = false; renameOpen = true })
+                    DropdownMenuItem(text = { Text(t("Удалить")) }, onClick = { menu = false; onDelete() })
                 }
             }
         }
@@ -176,9 +176,9 @@ private fun RecentItem(
     if (renameOpen) {
         AlertDialog(
             onDismissRequest = { renameOpen = false },
-            confirmButton = { TextButton(onClick = { onRename(renameTitle); renameOpen = false }) { Text("Сохранить") } },
-            dismissButton = { TextButton(onClick = { renameOpen = false }) { Text("Отмена") } },
-            title = { Text("Переименовать") },
+            confirmButton = { TextButton(onClick = { onRename(renameTitle); renameOpen = false }) { Text(t("Сохранить")) } },
+            dismissButton = { TextButton(onClick = { renameOpen = false }) { Text(t("Отмена")) } },
+            title = { Text(t("Переименовать")) },
             text = { OutlinedTextField(value = renameTitle, onValueChange = { renameTitle = it }, singleLine = true) }
         )
     }
