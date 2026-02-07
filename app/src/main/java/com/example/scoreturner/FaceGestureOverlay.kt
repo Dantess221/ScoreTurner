@@ -20,11 +20,13 @@ private const val COORDINATE_SYSTEM_VIEW_REFERENCED = 1
 data class GestureConfig(
     val winkLeftEnabled: Boolean,
     val winkRightEnabled: Boolean,
+    val smileEnabled: Boolean,
     val nodUpEnabled: Boolean,
     val nodDownEnabled: Boolean,
     val cooldownMs: Long,
     val winkClosedThr: Float,
     val winkOpenThr: Float,
+    val smileThreshold: Float,
     val nodDownDeltaDeg: Float,
     val nodReturnDeltaDeg: Float
 )
@@ -36,6 +38,7 @@ fun FaceGestureOverlay(
     showPreview: Boolean = false,
     onWinkLeft: () -> Unit,
     onWinkRight: () -> Unit,
+    onSmile: () -> Unit,
     onNodUp: () -> Unit,
     onNodDown: () -> Unit
 ) {
@@ -59,15 +62,18 @@ fun FaceGestureOverlay(
         BlinkNodEngine(
             enableWinkLeft = config.winkLeftEnabled,
             enableWinkRight = config.winkRightEnabled,
+            enableSmile = config.smileEnabled,
             enableNodUp = config.nodUpEnabled,
             enableNodDown = config.nodDownEnabled,
             cooldownMs = config.cooldownMs,
             winkClosedThr = config.winkClosedThr,
             winkOpenThr = config.winkOpenThr,
+            smileThreshold = config.smileThreshold,
             nodDownDelta = config.nodDownDeltaDeg,
             nodReturnDelta = config.nodReturnDeltaDeg,
             onWinkLeft = onWinkLeft,
             onWinkRight = onWinkRight,
+            onSmile = onSmile,
             onNodUp = onNodUp,
             onNodDown = onNodDown
         )
@@ -77,11 +83,13 @@ fun FaceGestureOverlay(
         engine.updateConfig(
             enableWinkLeft = config.winkLeftEnabled,
             enableWinkRight = config.winkRightEnabled,
+            enableSmile = config.smileEnabled,
             enableNodUp = config.nodUpEnabled,
             enableNodDown = config.nodDownEnabled,
             cooldownMs = config.cooldownMs,
             winkClosedThr = config.winkClosedThr,
             winkOpenThr = config.winkOpenThr,
+            smileThreshold = config.smileThreshold,
             nodDownDelta = config.nodDownDeltaDeg,
             nodReturnDelta = config.nodReturnDeltaDeg
         )
@@ -120,15 +128,18 @@ fun FaceGestureOverlay(
 private class BlinkNodEngine(
     enableWinkLeft: Boolean,
     enableWinkRight: Boolean,
+    enableSmile: Boolean,
     enableNodUp: Boolean,
     enableNodDown: Boolean,
     cooldownMs: Long,
     winkClosedThr: Float,
     winkOpenThr: Float,
+    smileThreshold: Float,
     nodDownDelta: Float,
     nodReturnDelta: Float,
     private val onWinkLeft: () -> Unit,
     private val onWinkRight: () -> Unit,
+    private val onSmile: () -> Unit,
     private val onNodUp: () -> Unit,
     private val onNodDown: () -> Unit
 ) {
@@ -136,36 +147,43 @@ private class BlinkNodEngine(
 
     private var enableWinkLeft = enableWinkLeft
     private var enableWinkRight = enableWinkRight
+    private var enableSmile = enableSmile
     private var enableNodUp = enableNodUp
     private var enableNodDown = enableNodDown
     private var cooldownMs = cooldownMs
     private var winkClosed = winkClosedThr
     private var winkOpen = winkOpenThr
+    private var smileThreshold = smileThreshold
     private var nodDownDelta = nodDownDelta
     private var nodReturnDelta = nodReturnDelta
 
     private var baselinePitch: Float? = null
     private var nodDown = false
     private var nodUp = false
+    private var smileActive = false
 
     fun updateConfig(
         enableWinkLeft: Boolean,
         enableWinkRight: Boolean,
+        enableSmile: Boolean,
         enableNodUp: Boolean,
         enableNodDown: Boolean,
         cooldownMs: Long,
         winkClosedThr: Float,
         winkOpenThr: Float,
+        smileThreshold: Float,
         nodDownDelta: Float,
         nodReturnDelta: Float
     ) {
         this.enableWinkLeft = enableWinkLeft
         this.enableWinkRight = enableWinkRight
+        this.enableSmile = enableSmile
         this.enableNodUp = enableNodUp
         this.enableNodDown = enableNodDown
         this.cooldownMs = cooldownMs
         this.winkClosed = winkClosedThr
         this.winkOpen = winkOpenThr
+        this.smileThreshold = smileThreshold
         this.nodDownDelta = nodDownDelta
         this.nodReturnDelta = nodReturnDelta
     }
@@ -181,6 +199,18 @@ private class BlinkNodEngine(
 
         if (enableWinkLeft && l < winkClosed && r > winkOpen) { fire(onWinkLeft); return }
         if (enableWinkRight && r < winkClosed && l > winkOpen) { fire(onWinkRight); return }
+
+        if (enableSmile) {
+            val smile = face.smilingProbability ?: 0f
+            if (!smileActive && smile > smileThreshold) {
+                smileActive = true
+                fire(onSmile)
+                return
+            }
+            if (smileActive && smile < smileThreshold * 0.7f) {
+                smileActive = false
+            }
+        }
 
         val pitch = face.headEulerAngleX
         if (baselinePitch == null) baselinePitch = pitch

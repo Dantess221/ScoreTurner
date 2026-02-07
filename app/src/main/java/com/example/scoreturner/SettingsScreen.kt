@@ -24,7 +24,7 @@ fun SettingsScreen(
     val listState = rememberLazyListState()
     var selectedTab by remember { mutableStateOf(0) }
     val categories = listOf("Общие", "Подмигивания", "Кивки", "Прочее")
-    val categoryIndices = mapOf(0 to 0, 1 to 3, 2 to 9, 3 to 15)
+    val categoryIndices = mapOf(0 to 0, 1 to 3, 2 to 11, 3 to 17)
 
     Scaffold(
         topBar = { TopAppBar(title = { Text(t("Настройки")) }, navigationIcon = {
@@ -102,6 +102,22 @@ fun SettingsScreen(
                         0.01f,
                         settings.useFaceGestures && settings.winkEnabled && (settings.winkLeftEnabled || settings.winkRightEnabled)
                     ) { v -> scope.launch { repo.setWinkOpenThr(v.toDouble()) } }
+                }
+                item {
+                    Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.fillMaxWidth()) {
+                        Text(t("Улыбка → вперёд"), modifier = Modifier.weight(1f))
+                        Switch(checked = settings.smileEnabled, enabled = settings.useFaceGestures, onCheckedChange = { v -> scope.launch { repo.setSmileEnabled(v) } })
+                    }
+                }
+                item {
+                    LabeledSlider(
+                        "Порог улыбки",
+                        "Считаем улыбку, если вероятность выше порога",
+                        settings.smileThreshold.toFloat(),
+                        0.2f..0.95f,
+                        0.01f,
+                        settings.useFaceGestures && settings.smileEnabled
+                    ) { v -> scope.launch { repo.setSmileThr(v.toDouble()) } }
                 }
 
                 item { Text(t("Кивки"), style = MaterialTheme.typography.titleLarge) }
