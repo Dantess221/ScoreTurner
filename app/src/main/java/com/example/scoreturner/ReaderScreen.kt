@@ -9,7 +9,7 @@ import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.gestures.awaitEachGesture
+import androidx.compose.foundation.gestures.detectDragGestures
 import androidx.compose.foundation.gestures.rememberTransformableState
 import androidx.compose.foundation.gestures.transformable
 import androidx.compose.foundation.interaction.MutableInteractionSource
@@ -35,8 +35,6 @@ import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.graphics.asImageBitmap
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.geometry.Offset
-import androidx.compose.ui.input.pointer.awaitFirstDown
-import androidx.compose.ui.input.pointer.awaitPointerEvent
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.platform.LocalClipboardManager
 import androidx.compose.ui.platform.LocalContext
@@ -224,43 +222,35 @@ fun ReaderScreen(
                                     .fillMaxSize()
                                     .graphicsLayer { alpha = 0.99f }
                                     .pointerInput(editMode, eraserMode, brushColor, brushSize, pageIndex) {
-                                        awaitEachGesture {
-                                            val down = awaitFirstDown(requireUnconsumed = false)
-                                            if (!editMode) return@awaitEachGesture
-                                            activePoints.clear()
-                                            activePoints.add(down.position)
-                                            var isMultiTouch = false
-                                            val pointerId = down.id
-                                            while (true) {
-                                                val event = awaitPointerEvent()
-                                                if (event.changes.size > 1) {
-                                                    isMultiTouch = true
-                                                    break
-                                                }
-                                                val change = event.changes.firstOrNull { it.id == pointerId } ?: continue
-                                                if (change.pressed) {
-                                                    activePoints.add(change.position)
-                                                    change.consume()
-                                                } else {
-                                                    break
-                                                }
-                                            }
-                                            if (!isMultiTouch && activePoints.size > 1) {
-                                                if (eraserMode) {
-                                                    val removed = findStrokesToErase(inkState.strokes, activePoints, eraserRadiusPx)
-                                                    inkState.removeStrokes(removed)
-                                                } else {
-                                                    inkState.addStroke(
-                                                        InkStroke(
-                                                            points = activePoints.toList(),
-                                                            color = brushColor,
-                                                            width = strokeWidthPx
+                                        if (!editMode) return@pointerInput
+                                        detectDragGestures(
+                                            onDragStart = { position ->
+                                                activePoints.clear()
+                                                activePoints.add(position)
+                                            },
+                                            onDrag = { change, _ ->
+                                                activePoints.add(change.position)
+                                                change.consume()
+                                            },
+                                            onDragEnd = {
+                                                if (activePoints.size > 1) {
+                                                    if (eraserMode) {
+                                                        val removed = findStrokesToErase(inkState.strokes, activePoints, eraserRadiusPx)
+                                                        inkState.removeStrokes(removed)
+                                                    } else {
+                                                        inkState.addStroke(
+                                                            InkStroke(
+                                                                points = activePoints.toList(),
+                                                                color = brushColor,
+                                                                width = strokeWidthPx
+                                                            )
                                                         )
-                                                    )
+                                                    }
                                                 }
-                                            }
-                                            activePoints.clear()
-                                        }
+                                                activePoints.clear()
+                                            },
+                                            onDragCancel = { activePoints.clear() }
+                                        )
                                     }
                             ) {
                                 inkState.strokes.forEach { stroke ->
