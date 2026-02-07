@@ -15,6 +15,7 @@ data class Settings(
     val winkEnabled: Boolean = true,
     val winkLeftEnabled: Boolean = true,
     val winkRightEnabled: Boolean = true,
+    val smileEnabled: Boolean = true,
     val nodEnabled: Boolean = true,
     val nodUpEnabled: Boolean = true,
     val nodDownEnabled: Boolean = true,
@@ -23,7 +24,8 @@ data class Settings(
     val nodDownDeltaDeg: Int = 15,
     val nodReturnDeltaDeg: Int = 7,
     val winkClosedThreshold: Double = 0.25,
-    val winkOpenThreshold: Double = 0.75
+    val winkOpenThreshold: Double = 0.75,
+    val smileThreshold: Double = 0.6
 )
 
 class SettingsRepository(private val ctx: Context) {
@@ -32,6 +34,7 @@ class SettingsRepository(private val ctx: Context) {
         val WINK = booleanPreferencesKey("wink_enabled")
         val WINK_LEFT = booleanPreferencesKey("wink_left_enabled")
         val WINK_RIGHT = booleanPreferencesKey("wink_right_enabled")
+        val SMILE = booleanPreferencesKey("smile_enabled")
         val NOD = booleanPreferencesKey("nod_enabled")
         val NOD_UP = booleanPreferencesKey("nod_up_enabled")
         val NOD_DOWN = booleanPreferencesKey("nod_down_enabled")
@@ -41,6 +44,7 @@ class SettingsRepository(private val ctx: Context) {
         val NOD_RETURN = intPreferencesKey("nod_return_delta_deg")
         val WINK_CLOSED = doublePreferencesKey("wink_closed_thr")
         val WINK_OPEN = doublePreferencesKey("wink_open_thr")
+        val SMILE_THR = doublePreferencesKey("smile_thr")
     }
 
     val settingsFlow = ctx.dataStore.data.map { p ->
@@ -49,6 +53,7 @@ class SettingsRepository(private val ctx: Context) {
             winkEnabled = p[Keys.WINK] ?: true,
             winkLeftEnabled = p[Keys.WINK_LEFT] ?: true,
             winkRightEnabled = p[Keys.WINK_RIGHT] ?: true,
+            smileEnabled = p[Keys.SMILE] ?: true,
             nodEnabled = p[Keys.NOD] ?: true,
             nodUpEnabled = p[Keys.NOD_UP] ?: true,
             nodDownEnabled = p[Keys.NOD_DOWN] ?: true,
@@ -57,7 +62,8 @@ class SettingsRepository(private val ctx: Context) {
             nodDownDeltaDeg = p[Keys.NOD_DOWN_DELTA] ?: 15,
             nodReturnDeltaDeg = p[Keys.NOD_RETURN] ?: 7,
             winkClosedThreshold = p[Keys.WINK_CLOSED] ?: 0.25,
-            winkOpenThreshold = p[Keys.WINK_OPEN] ?: 0.75
+            winkOpenThreshold = p[Keys.WINK_OPEN] ?: 0.75,
+            smileThreshold = p[Keys.SMILE_THR] ?: 0.6
         )
     }
 
@@ -65,6 +71,7 @@ class SettingsRepository(private val ctx: Context) {
     suspend fun setWinkEnabled(v: Boolean) = ctx.dataStore.edit { it[Keys.WINK] = v }
     suspend fun setWinkLeftEnabled(v: Boolean) = ctx.dataStore.edit { it[Keys.WINK_LEFT] = v }
     suspend fun setWinkRightEnabled(v: Boolean) = ctx.dataStore.edit { it[Keys.WINK_RIGHT] = v }
+    suspend fun setSmileEnabled(v: Boolean) = ctx.dataStore.edit { it[Keys.SMILE] = v }
     suspend fun setNodEnabled(v: Boolean) = ctx.dataStore.edit { it[Keys.NOD] = v }
     suspend fun setNodUpEnabled(v: Boolean) = ctx.dataStore.edit { it[Keys.NOD_UP] = v }
     suspend fun setNodDownEnabled(v: Boolean) = ctx.dataStore.edit { it[Keys.NOD_DOWN] = v }
@@ -74,4 +81,5 @@ class SettingsRepository(private val ctx: Context) {
     suspend fun setNodReturnDelta(v: Int) = ctx.dataStore.edit { it[Keys.NOD_RETURN] = v.coerceIn(3, 20) }
     suspend fun setWinkClosedThr(v: Double) = ctx.dataStore.edit { it[Keys.WINK_CLOSED] = v.coerceIn(0.05, 0.5) }
     suspend fun setWinkOpenThr(v: Double) = ctx.dataStore.edit { it[Keys.WINK_OPEN] = v.coerceIn(0.5, 0.95) }
+    suspend fun setSmileThr(v: Double) = ctx.dataStore.edit { it[Keys.SMILE_THR] = v.coerceIn(0.2, 0.95) }
 }
